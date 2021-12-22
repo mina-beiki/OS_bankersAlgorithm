@@ -33,8 +33,8 @@ bool isSafe(){
         work[k] += allocation[customerCtr][k];
     }
     int ctr = 0;
-    bool flagCan;
-    bool flag;
+    bool flagCan = true;
+    bool flag = true;
     while(ctr<NUMBER_OF_RESOURCES){
 
         if(finish[customerCtr] == false){
@@ -43,9 +43,8 @@ bool isSafe(){
                     flagCan = false;
             }
             if(flagCan){
-                for(int k=0 ; k<NUMBER_OF_RESOURCES; k++){
+                for(int k=0 ; k<NUMBER_OF_RESOURCES; k++)
                     work[k] += allocation[customerCtr][k];
-                }
                 finish[customerCtr] = true;
                 ctr++;
                 customerCtr = (customerCtr + 1) % NUMBER_OF_CUSTOMERS;
@@ -63,7 +62,7 @@ bool isSafe(){
             }
         }
 
-        if(flag)
+        if(flag==true)
             return false;
     }
 
@@ -132,7 +131,7 @@ bool release_resources(int release[], int customer_num){
     for(int i=0 ; i<NUMBER_OF_RESOURCES ; i++){
         available[i] += release[i];
     }
-    return true;gi
+    return true;
 }
 void release_resources_control(int customer_num){
     pthread_mutex_lock(&lock);
@@ -176,7 +175,7 @@ int main(int argc, char *argv[]) {
     //create the threads:
     int pid[] = {0,1,2,3,4};
     for (int i=0; i<NUMBER_OF_CUSTOMERS ; i++){
-        pthread_create(&(tid[i]),NULL,getResources,&pid[i])
+        pthread_create(&(tid[i]),NULL,getResources,&pid[i]);
     }
     return 0;
 }
