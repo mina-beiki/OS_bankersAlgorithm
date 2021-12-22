@@ -73,17 +73,19 @@ bool request_resources(int request[], int customer_num) {
 
     printf("Customer %d is Requesting Resources:\n", customer_num);
     for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
-        printf("Request for R%d = %d\n", i, request[i]);
+        printf("%d  ",request[i]);
     }
 
-
+    printf("\nAvailable = ");
     for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
-        printf("Available R%d = %d\n", i, available[i]);
+        printf("%d  ", available[i]);
     }
 
+    printf("\nNeed = ");
     for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
-        printf("Need for R%d = %d\n", i, need[customer_num][i]);
+        printf("%d  ", need[customer_num][i]);
     }
+    printf("\n");
 
     for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
         //first check 2 constraints:
@@ -111,8 +113,6 @@ bool request_resources(int request[], int customer_num) {
             printf("Request is more than need! ABORT!\n");
             return false;
         }
-
-
     }
 }
 
@@ -120,9 +120,8 @@ bool request_resources_control(int request[],int customer_num){
     //CRITICAL SECTION //
     bool released = false;
     pthread_mutex_lock(&lock);
-    released=request_resources(request,customer_num);
+    released=request_resources(request, customer_num);
     pthread_mutex_unlock(&lock);
-
     return released;
 }
 
@@ -135,20 +134,24 @@ bool release_resources(int release[], int customer_num){
 }
 void release_resources_control(int customer_num){
     pthread_mutex_lock(&lock);
-
     for(int i=0;i<NUMBER_OF_RESOURCES;i++)
-        release_resources(maximum[customer_num],customer_num);
+    release_resources(maximum[customer_num],customer_num);
     pthread_mutex_unlock(&lock);
     printf("Thread %d finished execution \n",customer_num);
 }
 
 void* getResources(void *arg){
     int customerNum = *(int *)arg;
-    bool released = false;
 
     //a random request
     int request_one[] = {6,7,8};     //prototype for a request
+    int request_two[] = {2,1,1};     //prototype for a request
+    int request_three[] = {2,2,1};     //prototype for a request
     while(request_resources_control(request_one,customerNum)==false);
+    while(request_resources_control(request_two,customerNum)==false);
+    while(request_resources_control(request_three,customerNum)==false);
+
+
     release_resources_control(customerNum);
     return 0;
 }
@@ -164,11 +167,12 @@ int main(int argc, char *argv[]) {
 
     //initialization of our data structures:
     for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
-        available[i] = strtol(argv[i + 1], NULL, 10);
+        //available[i] = strtol(argv[i + 1], NULL, 10);
+        available[i] = atoi(argv[i+1]);
         for (int j = 0; j < NUMBER_OF_CUSTOMERS; j++) {
-            maximum[j][i] = 5; //random initialization
+            maximum[j][i] = 10; //random initialization
             allocation[j][i] = 0;//default
-            need[j][i] = 5;//t first, need is same as max
+            need[j][i] = 10;//t first, need is same as max
         }
     }
 
@@ -177,6 +181,13 @@ int main(int argc, char *argv[]) {
     for (int i=0; i<NUMBER_OF_CUSTOMERS ; i++){
         pthread_create(&(tid[i]),NULL,getResources,&pid[i]);
     }
+
+    for (int i=0; i<NUMBER_OF_CUSTOMERS ; i++){
+        pthread_join(tid[i],0);
+    }
+
+    printf("FINISH!");
+    pthread_mutex_destroy(&lock);
     return 0;
 }
 
