@@ -127,6 +127,13 @@ bool request_resources_control(int request[],int customer_num){
     return released;
 }
 
+bool release_resources(int release[], int customer_num){
+    //give back resources:
+    for(int i=0 ; i<NUMBER_OF_RESOURCES ; i++){
+        available[i] += release[i];
+    }
+    return true;gi
+}
 void release_resources_control(int customer_num){
     pthread_mutex_lock(&lock);
 
