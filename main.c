@@ -28,7 +28,46 @@ bool isSafe(){
         finish[i] = false;
     }
 
-    
+    int customerCtr = 1;
+    for(int k=0 ; k<NUMBER_OF_RESOURCES; k++){
+        work[k] += allocation[customerCtr][k];
+    }
+    int ctr = 0;
+    bool flagCan;
+    bool flag;
+    while(ctr<NUMBER_OF_RESOURCES){
+
+        if(finish[customerCtr] == false){
+            for(int j=0 ; j<NUMBER_OF_RESOURCES;j++){
+                if(need[customerCtr][j]>work[j])
+                    flagCan = false;
+            }
+            if(flagCan){
+                for(int k=0 ; k<NUMBER_OF_RESOURCES; k++){
+                    work[k] += allocation[customerCtr][k];
+                }
+                finish[customerCtr] = true;
+                ctr++;
+                customerCtr = (customerCtr + 1) % NUMBER_OF_CUSTOMERS;
+                break;
+            }
+        }
+
+        for(int i=0 ; i<NUMBER_OF_CUSTOMERS; i++){
+            if(finish[i] == false){
+                for(int j=0 ; j<NUMBER_OF_RESOURCES; j++){
+                    if(work[j]>need[customerCtr][j])
+                        flag = false;
+                break;
+                }
+            }
+        }
+
+        if(flag)
+            return false;
+    }
+
+    return true;
 }
 
 bool request_resources(int request[], int customer_num) {
