@@ -13,6 +13,102 @@ int maximum[NUMBER_OF_CUSTOMERS][NUMBER_OF_RESOURCES];
 int allocation[NUMBER_OF_CUSTOMERS][NUMBER_OF_RESOURCES];
 /* the remaining need of each customer */
 int need[NUMBER_OF_CUSTOMERS][NUMBER_OF_RESOURCES];
+//threads:
+pthread_t tid[NUMBER_OF_CUSTOMERS];
+pthread_mutex_t lock;
+
+bool isSafe(){
+    int work[NUMBER_OF_RESOURCES];
+    for(int i=0; i<NUMBER_OF_RESOURCES; i++){
+        work[i] = available[i];
+    }
+
+    bool finish[NUMBER_OF_CUSTOMERS];
+    for(int i=0; i<NUMBER_OF_CUSTOMERS; i++){
+        finish[i] = false;
+    }
+
+    
+}
+
+bool request_resources(int request[], int customer_num) {
+
+    printf("Customer %d is Requesting Resources:\n", customer_num);
+    for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
+        printf("Request for R%d = %d\n", i, request[i]);
+    }
+
+
+    for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
+        printf("Available R%d = %d\n", i, available[i]);
+    }
+
+    for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
+        printf("Need for R%d = %d\n", i, need[customer_num][i]);
+    }
+
+    for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
+        //first check 2 constraints:
+        if (request[i] <= need[customer_num][i]) {
+            if(request[i] <= available[i]){
+                if( isSafe() ){
+                    printf("Safe! Request is granted!\n");
+
+                    for(int j=0 ; j<NUMBER_OF_RESOURCES ; j++){
+                        available[j] -= request[j];
+                        allocation[customer_num][j] += request[j];
+                        need[customer_num][j] -= request[j];
+                    }
+
+                    return true;
+                }else{
+                    printf("Not safe! Can't grant request!\n");
+                    return false;
+                }
+            }else{
+                printf("Request is more than available! ABORT!\n");
+                return false;
+            }
+        }else{
+            printf("Request is more than need! ABORT!\n");
+            return false;
+        }
+
+
+    }
+}
+
+bool request_resources_control(int request[],int customer_num){
+    //CRITICAL SECTION //
+    bool released = false;
+    pthread_mutex_lock(&lock);
+    released=request_resources(request,customer_num);
+    pthread_mutex_unlock(&lock);
+
+    return released;
+}
+
+void release_resources_control(int customer_num){
+    pthread_mutex_lock(&lock);
+
+    for(int i=0;i<NUMBER_OF_RESOURCES;i++)
+        release_resources(maximum[customer_num],customer_num);
+    pthread_mutex_unlock(&lock);
+    printf("Thread %d finished execution \n",customer_num);
+}
+
+void* getResources(void *arg){
+    int customerNum = *(int *)arg;
+    bool released = false;
+
+    //a random request
+    int request_one[] = {6,7,8};     //prototype for a request
+    while(request_resources_control(request_one,customerNum)==false);
+    release_resources_control(customerNum);
+    return 0;
+}
+
+
 
 int main(int argc, char *argv[]) {
     //check input:
@@ -34,7 +130,8 @@ int main(int argc, char *argv[]) {
     //create the threads:
     int pid[] = {0,1,2,3,4};
     for (int i=0; i<NUMBER_OF_CUSTOMERS ; i++){
-        pthread_create(&(tid[k]),NULL,getResources,&pid[i])
+        pthread_create(&(tid[i]),NULL,getResources,&pid[i])
     }
     return 0;
 }
+
